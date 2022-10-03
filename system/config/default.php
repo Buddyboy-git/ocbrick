@@ -11,8 +11,9 @@ $_['language_directory']   = 'en-gb';
 $_['language_autoload']    = array('en-gb');
 
 // Date
-$_['date_timezone']        = 'UTC';
-
+//$_['date_timezone']        = 'UTC';
+// Date
+$_['date_timezone']        = 'America/New_York';
 // Database
 $_['db_engine']            = 'mysqli'; // mpdo, mysqli or pgsql
 $_['db_hostname']          = 'localhost';

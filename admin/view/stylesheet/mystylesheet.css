@@ -1,0 +1,13 @@
+tr.orderstatus-Pending {
+    color : white;
+    background-color: red !important;
+}
+tr.orderstatus-Processing {
+    color : white;
+    background-color: yellow !important;
+}
+tr.orderstatus-Ready {
+    color : white;
+    background-color: green !important;
+}
+

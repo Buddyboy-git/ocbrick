@@ -227,6 +227,7 @@ class ControllerSaleOrder extends Controller {
 		foreach ($results as $result) {
 			$data['orders'][] = array(
 				'order_id'      => $result['order_id'],
+				'store_id'      => $result['store_id'],
 				'customer'      => $result['customer'],
 				'order_status'  => $result['order_status'] ? $result['order_status'] : $this->language->get('text_missing'),
 				'total'         => $this->currency->format($result['total'], $result['currency_code'], $result['currency_value']),
@@ -1315,6 +1316,37 @@ class ControllerSaleOrder extends Controller {
 		$this->response->setOutput(json_encode($json));
 	}
 
+	public function UpdateOrderStatus() {
+		$this->load->language('sale/order');
+
+		$json = array();
+
+		if (!$this->user->hasPermission('modify', 'sale/order')) {
+			$json['error'] = $this->language->get('error_permission');
+		} elseif (isset($this->request->get['order_id'])) {
+			if (isset($this->request->get['order_id'])) {
+				$order_id = $this->request->get['order_id'];
+			} else {
+				$order_id = 0;
+			}
+
+			$this->load->model('sale/order');
+
+			$myreturn = $this->model_sale_order->UpdateOrderStatus($order_id,$order_status);
+
+			if ($myreturn) {
+			    // Trigger notifications to costomer.
+			    //	$json['invoice_no'] = $invoice_no;
+			} else {
+				$json['error'] = $this->language->get('error_action');
+			}
+		}
+
+		$this->response->addHeader('Content-Type: application/json');
+		$this->response->setOutput(json_encode($json));
+	}
+
+
 	public function addReward() {
 		$this->load->language('sale/order');
 
@@ -1518,7 +1550,7 @@ class ControllerSaleOrder extends Controller {
 		foreach ($orders as $order_id) {
 			$order_info = $this->model_sale_order->getOrder($order_id);
 			
-			$text_order = sprintf($this->language->get('text_order'), $order_id);
+			$data['text_order'] = sprintf($this->language->get('text_order'), $order_id);
 			
 			if ($order_info) {
 				$store_info = $this->model_setting_setting->getSetting('config', $order_info['store_id']);
@@ -1672,9 +1704,8 @@ class ControllerSaleOrder extends Controller {
 				}
 
 				$data['orders'][] = array(
-					'order_id'	   => $order_id,
+					'order_id'	       => $order_id,
 					'invoice_no'       => $invoice_no,
-					'text_order'	   => $text_order,
 					'date_added'       => date($this->language->get('date_format_short'), strtotime($order_info['date_added'])),
 					'store_name'       => $order_info['store_name'],
 					'store_url'        => rtrim($order_info['store_url'], '/'),
@@ -1869,4 +1900,50 @@ class ControllerSaleOrder extends Controller {
 
 		$this->response->setOutput($this->load->view('sale/order_shipping', $data));
 	}
+	
+	    public function myupdateorderstatus() {
+    		$json = array();
+	        $this->load->language('sale/order');
+    		$this->load->model('sale/order');
+        if (!$this->user->hasPermission('modify', 'sale/order')) {
+            $json['error'] = $this->language->get('error_permission');
+        } else {
+            $json['success'] = $this->language->get('text_status_updated');
+        }
+                    if (isset($this->request->get['order_id'])) {
+                $order_id = $this->request->get['order_id'];
+            } else {
+                $order_id = 0;
+            }
+            if (isset($this->request->get['order_status_id'])) {
+                $order_status_id = $this->request->get['order_status_id'];
+            } else {
+                $order_status_id = 0;
+            }
+            if (isset($this->request->get['store_id'])) {
+                $store_id = $this->request->get['store_id'];
+            } else {
+                $store_id = 0;
+            }
+/*
+$to = "miketrotta@gmail.com";
+$subject = "Test from peddlersplus";
+$message = "Hello! Your order status has changed";
+$from = "no=reply@peddlersplus.com";
+$headers = "From:" . $from;
+mail($to,$subject,$message,$headers);
+*/
+
+        $myresult = $this->model_sale_order->getOrderStatus($store_id,$order_id,$order_status_id);
+		$this->response->addHeader('Content-Type: application/json');
+		$this->response->setOutput(json_encode($json));
+		
+//		$this->response->setOutput($this->load->view('sale/order_list'));
+//echo $store_id;
+//    		$this->response->setOutput($this->load->view('sale/order_list'));
+//	        header('Content-Type: application/json');
+//             return json_encode(array('success' => true,));
+
+	    }
+
 }
